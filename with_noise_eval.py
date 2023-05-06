@@ -57,7 +57,7 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
     
     op_dir = "/content/drive/MyDrive/noise_only_mirror/sigma_{}".format(sigma)
     ap_dir = "/content/drive/MyDrive/noise_around_mirror/sigma_{}".format(sigma)
-    an_dir = "/content/drive/MyDrive/noise_only_mirror/sigma_{}".format(sigma)
+    an_dir = "/content/drive/MyDrive/noise_whole_image/sigma_{}".format(sigma)
     os.makedirs(op_dir, exist_ok=True)
     os.makedirs(ap_dir, exist_ok=True)
     os.makedirs(an_dir, exist_ok=True)
