@@ -45,8 +45,8 @@ to_test = {'MSD': msd_testing_root}
 
 to_pil = transforms.ToPILImage()
 
-data_dir = "/content/ICCV2019_MirrorNet/MSD/train/image"
-label_dir = "/content/ICCV2019_MirrorNet/MSD/train/mask"   
+data_dir = "/content/ICCV2019_MirrorNet/MSD/test/image"
+label_dir = "/content/ICCV2019_MirrorNet/MSD/test/mask"   
     
             
 def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
@@ -55,12 +55,19 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
     ap = np.zeros(5)
     an = np.zeros(5)
     
-    op_dir = "/content/drive/MyDrive/noise_only_mirror/sigma_{}".format(sigma)
-    ap_dir = "/content/drive/MyDrive/noise_around_mirror/sigma_{}".format(sigma)
-    an_dir = "/content/drive/MyDrive/noise_whole_image/sigma_{}".format(sigma)
-    os.makedirs(op_dir, exist_ok=True)
-    os.makedirs(ap_dir, exist_ok=True)
-    os.makedirs(an_dir, exist_ok=True)
+    i_op_dir = "/content/drive/MyDrive/with_noise/noise_only_mirror/input/sigma_{}".format(sigma)
+    i_ap_dir = "/content/drive/MyDrive/with_noise/noise_around_mirror/input/sigma_{}".format(sigma)
+    i_an_dir = "/content/drive/MyDrive/with_noise/noise_whole_image/input/sigma_{}".format(sigma)
+    p_op_dir = "/content/drive/MyDrive/with_noise/noise_only_mirror/predict/sigma_{}".format(sigma)
+    p_ap_dir = "/content/drive/MyDrive/with_noise/noise_around_mirror/predict/sigma_{}".format(sigma)
+    p_an_dir = "/content/drive/MyDrive/with_noise/noise_whole_image/predict/sigma_{}".format(sigma)
+    
+    os.makedirs(i_op_dir, exist_ok=True)
+    os.makedirs(i_ap_dir, exist_ok=True)
+    os.makedirs(i_an_dir, exist_ok=True)
+    os.makedirs(p_op_dir, exist_ok=True)
+    os.makedirs(p_ap_dir, exist_ok=True)
+    os.makedirs(p_an_dir, exist_ok=True)
     
     
     with torch.no_grad():
@@ -107,13 +114,20 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
                 f_1_ap = crf_refine(np.array(img.convert('RGB')), f_1_ap) 
                 f_1_an = crf_refine(np.array(img.convert('RGB')), f_1_an)
             
-            op_path = op_dir + "/" + os.path.basename(path) 
-            ap_path = ap_dir + "/" + os.path.basename(path) 
-            an_path = an_dir + "/" + os.path.basename(path) 
+            i_op_path = i_op_dir + "/" + os.path.basename(path) 
+            i_ap_path = i_ap_dir + "/" + os.path.basename(path) 
+            i_an_path = i_an_dir + "/" + os.path.basename(path) 
             
-            only_puddle.save(op_path)
-            around_puddle.save(ap_path)
-            all_noise.save(an_path)
+            p_op_path = p_op_dir + "/" + os.path.basename(path) 
+            p_ap_path = p_ap_dir + "/" + os.path.basename(path) 
+            p_an_path = p_an_dir + "/" + os.path.basename(path) 
+            
+            only_puddle.save(i_op_path)
+            around_puddle.save(i_ap_path)
+            all_noise.save(i_an_path)
+            Image.fromarray(f_1_op).save(p_op_path)
+            Image.fromarray(f_1_ap).save(p_ap_path)
+            Image.fromarray(f_1_an).save(p_an_path)
             
             op += eval(f_1_op, label, thresh)
             ap += eval(f_1_ap, label, thresh)
