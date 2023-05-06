@@ -55,9 +55,9 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
     ap = np.zeros(5)
     an = np.zeros(5)
     
-    op_dir = "noise_only_mirror/sigma_{}".format(sigma)
-    ap_dir = "noise_around_mirror/sigma_{}".format(sigma)
-    an_dir = "noise_only_mirror/sigma_{}".format(sigma)
+    op_dir = "/content/drive/MyDrive/noise_only_mirror/sigma_{}".format(sigma)
+    ap_dir = "/content/drive/MyDrive/noise_around_mirror/sigma_{}".format(sigma)
+    an_dir = "/content/drive/MyDrive/noise_only_mirror/sigma_{}".format(sigma)
     os.makedirs(op_dir, exist_ok=True)
     os.makedirs(ap_dir, exist_ok=True)
     os.makedirs(an_dir, exist_ok=True)
@@ -74,11 +74,10 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
             label = Image.open(label_path_list[idx])
             label = np.array(label)
             label[label==1] = 255
-            print(img.shape)
-            print(label.shape)
+            
 
             only_puddle = gauss_only_puddle(img, label, sigma)
-            around_puddle = gauss_around_puddle(img, label, sigma, k=(5,5))
+            around_puddle = gauss_around_puddle(img, label, sigma, k=(15,15))
             all_noise = gauss_all_img(img, label, sigma)
             
             only_puddle = Image.fromarray(only_puddle)
@@ -112,9 +111,9 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
             ap_path = ap_dir + "/" + os.path.basename(path) 
             an_path = an_dir + "/" + os.path.basename(path) 
             
-            Image.fromarray(f_1_op).save(op_path)
-            Image.fromarray(f_1_ap).save(ap_path)
-            Image.fromarray(f_1_an).save(an_path)
+            only_puddle.save(op_path)
+            around_puddle.save(ap_path)
+            all_noise.save(an_path)
             
             op += eval(f_1_op, label, thresh)
             ap += eval(f_1_ap, label, thresh)
