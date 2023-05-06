@@ -45,8 +45,8 @@ to_test = {'MSD': msd_testing_root}
 
 to_pil = transforms.ToPILImage()
 
-data_dir = "puddle_test/test"
-label_dir = "puddle_test/test"   
+data_dir = "/content/ICCV2019_MirrorNet/MSD/train/image"
+label_dir = "/content/ICCV2019_MirrorNet/MSD/train/mask"   
     
             
 def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
@@ -58,14 +58,14 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
     op_dir = "noise_only_mirror/sigma_{}".format(sigma)
     ap_dir = "noise_around_mirror/sigma_{}".format(sigma)
     an_dir = "noise_only_mirror/sigma_{}".format(sigma)
-    os.makedirs(op_path, exist_ok=True)
-    os.makedirs(ap_path, exist_ok=True)
-    os.makedirs(an_path, exist_ok=True)
+    os.makedirs(op_dir, exist_ok=True)
+    os.makedirs(ap_dir, exist_ok=True)
+    os.makedirs(an_dir, exist_ok=True)
     
     
     with torch.no_grad():
         for idx,path in enumerate(img_path_list):
-            print("="*30 + "iteration" + str(idx+1) + "="*30)
+            #print("="*30 + "iteration" + str(idx+1) + "="*30)
             img = Image.open(path)
             if img.mode != 'RGB':
                 img = img.convert('RGB')
@@ -74,10 +74,17 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
             label = Image.open(label_path_list[idx])
             label = np.array(label)
             label[label==1] = 255
+            print(img.shape)
+            print(label.shape)
+
             only_puddle = gauss_only_puddle(img, label, sigma)
             around_puddle = gauss_around_puddle(img, label, sigma, k=(5,5))
             all_noise = gauss_all_img(img, label, sigma)
             
+            only_puddle = Image.fromarray(only_puddle)
+            around_puddle = Image.fromarray(around_puddle)
+            all_noise = Image.fromarray(all_noise)
+           
             
             img_var_op = Variable(img_transform(only_puddle).unsqueeze(0)).to(device)
             img_var_ap = Variable(img_transform(around_puddle).unsqueeze(0)).to(device)
@@ -95,15 +102,15 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
             f_1_op = np.array(transforms.Resize((h, w))(to_pil(f_1_op)))
             f_1_ap = np.array(transforms.Resize((h, w))(to_pil(f_1_ap)))
             f_1_an = np.array(transforms.Resize((h, w))(to_pil(f_1_an)))
-            
+            img = Image.fromarray(img)
             if args['crf']:
                 f_1_op = crf_refine(np.array(img.convert('RGB')), f_1_op)
                 f_1_ap = crf_refine(np.array(img.convert('RGB')), f_1_ap) 
                 f_1_an = crf_refine(np.array(img.convert('RGB')), f_1_an)
             
-            op_path = op_dir + "/" + os.path.basename(path) + ".png"
-            ap_path = ap_dir + "/" + os.path.basename(path) + ".png"
-            an_path = an_dir + "/" + os.path.basename(path) + ".png"
+            op_path = op_dir + "/" + os.path.basename(path) 
+            ap_path = ap_dir + "/" + os.path.basename(path) 
+            an_path = an_dir + "/" + os.path.basename(path) 
             
             Image.fromarray(f_1_op).save(op_path)
             Image.fromarray(f_1_ap).save(ap_path)
@@ -126,14 +133,17 @@ def evaluate(net, img_path_list, label_path_list, sigma, thresh=0.8):
 
 def main():
     net = MirrorNet().to(device)
-    net.load_state_dict(torch.load("ckpt/MirrorNet/MirrorNet.pth"))
+    net.load_state_dict(torch.load("/content/ICCV2019_MirrorNet/MirrorNet.pth"))
     print('Load trained model succeed!')
     print("="*100)
     
     img_path_list = glob.glob(data_dir + "/*.jpg")
     label_path_list = glob.glob(label_dir + "/*.png")
+    img_path_list = sorted(img_path_list)
+    label_path_list = sorted(label_path_list)
+    
     thresh_list = [0.7, 0.8, 0.9]
-    sigma_list = [x for x in range(0, 160, 30)]
+    sigma_list = [x for x in range(30, 160, 30)]
     
         
     for thresh in thresh_list:
