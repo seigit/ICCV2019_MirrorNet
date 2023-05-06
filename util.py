@@ -59,6 +59,6 @@ def eval(pred, label, thresh=0.9, eps=1e-9):
     rec = tp / (tp + fn + eps)
     f1 = (2 * prec * rec) / (prec + rec + eps)
     iou = tp / (tp + fp + fn + eps)
-    return np.array(acc, prec, rec, iou, f1)
+    return np.array([acc, prec, rec, iou, f1])
     
 
